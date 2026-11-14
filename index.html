@@ -518,7 +518,7 @@
  ***************************************************************/
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzagTvftZgtW1XdP8FP6WeEFM-h9iQEfJg3zbpWJUKWjg4NjFyjq_L7Afn3GSZJ9HLY0w/exec";
+  "https://script.google.com/macros/s/AKfycbyeBQfmPJS7M2onlinH6oIF4KD2Oq5CgkPykXJ-Sgw0dWsuC3JkT6xthii916LaTA2LWA/exec";
 
 
 /***************************************************************
@@ -1093,6 +1093,7 @@ function verifyIdentifier(id) {
 }
 
 
+
 /***************************************************************
  * 12. DISPLAY VERIFICATION RESULT
  ***************************************************************/
@@ -1105,6 +1106,7 @@ function displayVerificationResult(response) {
 
   const id = response.identificationNumber || "";
 
+  // STUDENT - SHWR FOUND
   if (status === "WITH SHWR") {
 
     showResult(
@@ -1115,9 +1117,9 @@ function displayVerificationResult(response) {
     );
 
     return;
-
   }
 
+  // STUDENT - NO SHWR
   if (status === "NO SHWR") {
 
     showResult(
@@ -1129,9 +1131,37 @@ function displayVerificationResult(response) {
     );
 
     return;
-
   }
 
+  // COLLEGE - WITH APE/EPE
+  if (status === "WITH APE/EPE") {
+
+    showResult(
+      "WITH APE/EPE",
+      response.message ||
+        "College APE/EPE record identified.",
+      "complete",
+      "Identification Number: " + id
+    );
+
+    return;
+  }
+
+  // COLLEGE - NO APE/EPE
+  if (status === "NO APE/EPE") {
+
+    showResult(
+      "NO APE/EPE",
+      response.message ||
+        "No College APE/EPE record was found.",
+      "missing",
+      "Identification Number: " + id
+    );
+
+    return;
+  }
+
+  // NO DATABASE RECORDS
   if (status === "NO RECORDS") {
 
     showResult(
@@ -1142,22 +1172,24 @@ function displayVerificationResult(response) {
     );
 
     return;
-
   }
 
+  // EMPLOYEE - PROCEED TO CLINIC
+  // Only the large heading is displayed.
+  // The smaller duplicate instruction is removed.
   if (status === "PROCEED TO CLINIC") {
 
     showResult(
       "PROCEED TO MRR / LC1 / LC2 / UH CLINIC",
-      response.message || "Employee identification record found.",
+      "",
       "employee",
       "Identification Number: " + id
     );
 
     return;
-
   }
 
+  // EMPLOYEE - CLEARED
   if (status === "CLEARED") {
 
     showResult(
@@ -1168,22 +1200,21 @@ function displayVerificationResult(response) {
     );
 
     return;
-
   }
 
   if (status === "EMPLOYEE FOUND") {
 
     showResult(
       "PROCEED TO MRR / LC1 / LC2 / UH CLINIC",
-      response.message || "Employee identification record found.",
+      "",
       "employee",
       "Identification Number: " + id
     );
 
     return;
-
   }
 
+  // NO MATCHING RECORD
   if (status === "NOT FOUND") {
 
     showResult(
@@ -1194,9 +1225,37 @@ function displayVerificationResult(response) {
     );
 
     return;
-
   }
 
+  // MULTIPLE MATCHES
+  if (status === "MULTIPLE MATCHES") {
+
+    showResult(
+      "MULTIPLE MATCHING RECORDS",
+      response.message ||
+        "Multiple records were found. Please contact HSU for verification.",
+      "error",
+      "Identification Number: " + id
+    );
+
+    return;
+  }
+
+  // UNRECOGNIZED DESIGNATION
+  if (status === "UNRECOGNIZED") {
+
+    showResult(
+      "UNRECOGNIZED RECORD",
+      response.message ||
+        "The designation could not be identified. Please contact HSU.",
+      "error",
+      "Identification Number: " + id
+    );
+
+    return;
+  }
+
+  // DEFAULT
   showResult(
     status || "UNKNOWN STATUS",
     response.message || "Verification completed.",
