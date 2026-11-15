@@ -1094,8 +1094,18 @@ function verifyIdentifier(id) {
 
 
 
+
 /***************************************************************
  * 12. DISPLAY VERIFICATION RESULT
+ *
+ * UPDATED RESULT NOTICES:
+ * - WITH SHWR
+ * - NO SHWR
+ * - WITH APE
+ * - WITH EPE
+ * - NO APE
+ * - PROCEED TO CLINIC
+ * - CLEARED
  ***************************************************************/
 
 function displayVerificationResult(response) {
@@ -1124,8 +1134,7 @@ function displayVerificationResult(response) {
 
     showResult(
       "NO SHWR SUBMISSION",
-      response.message ||
-        "No SHWR submission was found for this identification number.",
+      "No Student Health and Wellness Record submission was found for this identification number. Please submit the required SHWR.",
       "missing",
       "Identification Number: " + id
     );
@@ -1133,13 +1142,12 @@ function displayVerificationResult(response) {
     return;
   }
 
-  // COLLEGE - WITH APE/EPE
-  if (status === "WITH APE/EPE") {
+  // COLLEGE - APE FOUND
+  if (status === "WITH APE") {
 
     showResult(
-      "WITH APE/EPE",
-      response.message ||
-        "College APE/EPE record identified.",
+      "WITH APE",
+      "A College Annual Physical Examination record was found in the HSU database.",
       "complete",
       "Identification Number: " + id
     );
@@ -1147,13 +1155,25 @@ function displayVerificationResult(response) {
     return;
   }
 
-  // COLLEGE - NO APE/EPE
-  if (status === "NO APE/EPE") {
+  // COLLEGE - EPE FOUND
+  if (status === "WITH EPE") {
 
     showResult(
-      "NO APE/EPE",
-      response.message ||
-        "No College APE/EPE record was found.",
+      "WITH EPE",
+      "A College Entrance Physical Examination record was found in the HSU database.",
+      "complete",
+      "Identification Number: " + id
+    );
+
+    return;
+  }
+
+  // COLLEGE - NO APE
+  if (status === "NO APE") {
+
+    showResult(
+      "NO APE RECORD",
+      "No College Annual Physical Examination record was found for this identification number.",
       "missing",
       "Identification Number: " + id
     );
@@ -1161,22 +1181,7 @@ function displayVerificationResult(response) {
     return;
   }
 
-  // NO DATABASE RECORDS
-  if (status === "NO RECORDS") {
-
-    showResult(
-      "NO RECORDS AVAILABLE",
-      "The SHWR database currently has no available records.",
-      "error",
-      "Please contact the Health Services Unit."
-    );
-
-    return;
-  }
-
   // EMPLOYEE - PROCEED TO CLINIC
-  // Only the large heading is displayed.
-  // The smaller duplicate instruction is removed.
   if (status === "PROCEED TO CLINIC") {
 
     showResult(
@@ -1194,20 +1199,8 @@ function displayVerificationResult(response) {
 
     showResult(
       "CLEARED",
-      response.message || "No employee identification record was found.",
+      "No employee identification record was found in the HSU database. The employee is considered cleared.",
       "complete",
-      "Identification Number: " + id
-    );
-
-    return;
-  }
-
-  if (status === "EMPLOYEE FOUND") {
-
-    showResult(
-      "PROCEED TO MRR / LC1 / LC2 / UH CLINIC",
-      "",
-      "employee",
       "Identification Number: " + id
     );
 
@@ -1255,6 +1248,20 @@ function displayVerificationResult(response) {
     return;
   }
 
+  // CATEGORY NOT RECOGNIZED
+  if (status === "CATEGORY NOT RECOGNIZED") {
+
+    showResult(
+      "CATEGORY NOT RECOGNIZED",
+      response.message ||
+        "The college record was found, but its category could not be identified. Please contact HSU.",
+      "error",
+      "Identification Number: " + id
+    );
+
+    return;
+  }
+
   // DEFAULT
   showResult(
     status || "UNKNOWN STATUS",
@@ -1264,6 +1271,8 @@ function displayVerificationResult(response) {
   );
 
 }
+
+
 
 
 /***************************************************************
@@ -1315,11 +1324,12 @@ function showResult(
 
   formContainer.replaceChildren();
 
-  /*************************************************************
-   * SHOW SHWR SUBMISSION FORM LINKS WHEN MISSING
-   *************************************************************/
+  /*
+   * SHOW SHWR FORMS ONLY WHEN THE RESULT IS NO SHWR.
+   * NO APE MUST NOT DISPLAY SHWR SUBMISSION FORMS.
+   */
 
-  if (statusType === "missing") {
+  if (title === "NO SHWR SUBMISSION") {
 
     const heading = document.createElement("p");
 
